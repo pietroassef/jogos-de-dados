@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>🎲 Jogo de Dados Moderno</title>
+  <style>
+    /* Reset */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f2f5;
+      color: #222;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      align-items: center;
+      padding: 20px;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    h1 {
+      font-size: 2.8rem;
+      margin-bottom: 10px;
+      color: #222;
+      user-select: none;
+    }
+
+    /* Container principal */
+    .game-container {
+      background: #fff;
+      padding: 30px 40px;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+      max-width: 450px;
+      width: 100%;
+    }
+
+    /* Placar */
+    .scoreboard {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 25px;
+      font-size: 1.3rem;
+      font-weight: 600;
+      user-select: none;
+    }
+
+    /* Dados e jogadores */
+    .dice-container {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 25px;
+    }
+
+    .player-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 40%;
+    }
+
+    .player-box h2 {
+      margin-bottom: 15px;
+      font-weight: 700;
+      font-size: 1.5rem;
+      color: #444;
+      user-select: none;
+    }
+
+    .dice {
+      font-size: 100px;
+      user-select: none;
+      cursor: default;
+      animation-duration: 0.4s;
+      animation-timing-function: ease-in-out;
+      animation-fill-mode: forwards;
+    }
+
+    /* Botões */
+    .controls {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    select, button {
+      padding: 10px 18px;
+      margin: 0 8px 10px 8px;
+      font-size: 1rem;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      font-weight: 600;
+      user-select: none;
+    }
+
+    select {
+      background-color: #e0e0e0;
+      color: #444;
+    }
+
+    select:hover {
+      background-color: #d2d2d2;
+    }
+
+    button {
+      background-color: #5a67d8;
+      color: #fff;
+      box-shadow: 0 5px 10px rgba(90, 103, 216, 0.4);
+    }
+
+    button:hover {
+      background-color: #434aa8;
+      box-shadow: 0 7px 12px rgba(67, 74, 168, 0.6);
+    }
+
+    /* Resultado */
+    .result {
+      text-align: center;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #333;
+      min-height: 40px;
+      margin-bottom: 10px;
+      user-select: none;
+    }
+
+    /* Histórico */
+    .history-container {
+      background-color: #f9fafb;
+      border-radius: 12px;
+      padding: 15px 20px;
+      max-height: 150px;
+      overflow-y: auto;
+      box-shadow: inset 0 0 5px #ccc;
+      font-size: 0.9rem;
+      color: #555;
+      user-select: none;
+    }
+
+    .history-item {
+      padding: 6px 0;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .history-item:last-child {
+      border-bottom: none;
+    }
+
+    /* Animação do dado - shake */
+    @keyframes shake {
+      0% { transform: rotate(0deg); }
+      20% { transform: rotate(15deg); }
+      40% { transform: rotate(-15deg); }
+      60% { transform: rotate(15deg); }
+      80% { transform: rotate(-15deg); }
+      100% { transform: rotate(0deg); }
+    }
+
+    .shake {
+      animation-name: shake;
+    }
+
+    /* Dark Mode */
+    body.dark {
+      background: #1f2029;
+      color: #ddd;
+    }
+
+    body.dark .game-container {
+      background: #2c2f42;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8);
+    }
+
+    body.dark .scoreboard {
+      color: #ddd;
+    }
+
+    body.dark select {
+      background-color: #454a67;
+      color: #ddd;
+    }
+
+    body.dark select:hover {
+      background-color: #3b3f58;
+    }
+
+    body.dark button {
+      background-color: #6a75f5;
+      box-shadow: 0 5px 10px rgba(106, 117, 245, 0.6);
+      color: #eee;
+    }
+
+    body.dark button:hover {
+      background-color: #5059bb;
+      box-shadow: 0 7px 12px rgba(80, 89, 187, 0.8);
+    }
+
+    body.dark .history-container {
+      background-color: #212436;
+      color: #ccc;
+      box-shadow: inset 0 0 5px #444;
+    }
+
+  </style>
+</head>
+<body>
+
+  <h1>🎲 Jogo de Dados Moderno</h1>
+
+  <div class="game-container">
+
+    <div class="scoreboard" aria-live="polite" aria-atomic="true">
+      🧍 Jogador: <span id="playerScore">0</span> | 💻 Computador: <span id="computerScore">0</span>
+    </div>
+
+    <div class="dice-container" role="region" aria-label="Dados">
+      <div class="player-box">
+        <h2>Jogador</h2>
+        <div id="playerDice" class="dice" aria-live="polite" aria-atomic="true">🎲</div>
+      </div>
+      <div class="player-box">
+        <h2>Computador</h2>
+        <div id="computerDice" class="dice" aria-live="polite" aria-atomic="true">🎲</div>
+      </div>
+    </div>
+
+    <div class="result" id="resultText" aria-live="polite">Clique em "Jogar" para começar!</div>
+
+    <div class="controls">
+      <label for="roundsSelect">Número de rodadas: </label>
+      <select id="roundsSelect" aria-label="Selecionar número de rodadas">
+        <option value="3">Melhor de 3</option>
+        <option value="5" selected>Melhor de 5</option>
+        <option value="7">Melhor de 7</option>
+        <option value="9">Melhor de 9</option>
+        <option value="11">Melhor de 11</option>
+      </select>
+
+      <button id="rollBtn">🎲 Jogar</button>
+      <button id="resetBtn" class="reset">🔄 Resetar</button>
+      <button id="darkModeBtn" aria-pressed="false" aria-label="Ativar modo escuro">🌙 Modo Escuro</button>
+    </div>
+
+    <div class="history-container" aria-live="polite" aria-atomic="true" role="log" aria-label="Histórico de rodadas" id="history">
+      <!-- Histórico das jogadas aparecerá aqui -->
+    </div>
+
+  </div>
+
+  <script>
+    // Emojis dos dados de 1 a 6
+    const diceEmojis = ["", "⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
+
+    // Elementos
+    const playerDiceEl = document.getElementById('playerDice');
+    const computerDiceEl = document.getElementById('computerDice');
+    const playerScoreEl = document.getElementById('playerScore');
+    const computerScoreEl = document.getElementById('computerScore');
+    const resultTextEl = document.getElementById('resultText');
+    const historyEl = document.getElementById('history');
+    const roundsSelectEl = document.getElementById('roundsSelect');
+    const rollBtn = document.getElementById('rollBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const darkModeBtn = document.getElementById('darkModeBtn');
+    const bodyEl = document.body;
+
+    let playerScore = 0;
+    let computerScore = 0;
+    let history = [];
+    let maxRounds = parseInt(roundsSelectEl.value);
+    let currentRound = 0;
+    let gameOver = false;
+
+    function updateScores() {
+      playerScoreEl.textContent = playerScore;
+      computerScoreEl.textContent = computerScore;
+    }
+
+    function updateHistory(playerRoll, computerRoll, winner) {
+      const roundNum = currentRound;
+      const item = document.createElement('div');
+      item.classList.add('history-item');
+      item.textContent = `Rodada ${roundNum}: Jogador ${diceEmojis[playerRoll]} vs Computador ${diceEmojis[computerRoll]} → ${winner}`;
+      historyEl.prepend(item);  // Mostra as últimas jogadas no topo
+    }
+
+    function animateDice() {
+      playerDiceEl.classList.add('shake');
+      computerDiceEl.classList.add('shake');
+      setTimeout(() => {
+        playerDiceEl.classList.remove('shake');
+        computerDiceEl.classList.remove('shake');
+      }, 400);
+    }
+
+    function checkGameOver() {
+      // Quem chega primeiro a metade + 1 vence
+     
