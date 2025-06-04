@@ -278,11 +278,13 @@
     let currentRound = 0;
     let gameOver = false;
 
+    // Atualiza o placar na tela
     function updateScores() {
       playerScoreEl.textContent = playerScore;
       computerScoreEl.textContent = computerScore;
     }
 
+    // Adiciona uma linha no histórico
     function updateHistory(playerRoll, computerRoll, winner) {
       const roundNum = currentRound;
       const item = document.createElement('div');
@@ -291,6 +293,7 @@
       historyEl.prepend(item);  // Mostra as últimas jogadas no topo
     }
 
+    // Anima os dados
     function animateDice() {
       playerDiceEl.classList.add('shake');
       computerDiceEl.classList.add('shake');
@@ -300,6 +303,109 @@
       }, 400);
     }
 
+    // Verifica se o jogo acabou
     function checkGameOver() {
-      // Quem chega primeiro a metade + 1 vence
-     
+      // Quem alcançar mais da metade das rodadas vence
+      const roundsToWin = Math.ceil(maxRounds / 2);
+
+      if (playerScore >= roundsToWin) {
+        resultTextEl.textContent = "🎉 Você venceu o jogo! Parabéns!";
+        gameOver = true;
+        rollBtn.disabled = true;
+        return true;
+      } else if (computerScore >= roundsToWin) {
+        resultTextEl.textContent = "💻 Computador venceu o jogo! Tente novamente.";
+        gameOver = true;
+        rollBtn.disabled = true;
+        return true;
+      } else if (currentRound >= maxRounds) {
+        // Caso todas as rodadas acabem sem vencedor claro
+        if (playerScore > computerScore) {
+          resultTextEl.textContent = "🎉 Você venceu o jogo! Parabéns!";
+        } else if (computerScore > playerScore) {
+          resultTextEl.textContent = "💻 Computador venceu o jogo! Tente novamente.";
+        } else {
+          resultTextEl.textContent = "🤝 Empate!";
+        }
+        gameOver = true;
+        rollBtn.disabled = true;
+        return true;
+      }
+      return false;
+    }
+
+    // Executa uma jogada
+    function playRound() {
+      if (gameOver) return;
+
+      animateDice();
+
+      // Delay para aparecer animação
+      setTimeout(() => {
+        const playerRoll = Math.floor(Math.random() * 6) + 1;
+        const computerRoll = Math.floor(Math.random() * 6) + 1;
+
+        // Atualiza emojis
+        playerDiceEl.textContent = diceEmojis[playerRoll];
+        computerDiceEl.textContent = diceEmojis[computerRoll];
+
+        currentRound++;
+
+        let winner;
+        if (playerRoll > computerRoll) {
+          playerScore++;
+          winner = "Jogador venceu";
+        } else if (computerRoll > playerRoll) {
+          computerScore++;
+          winner = "Computador venceu";
+        } else {
+          winner = "Empate";
+        }
+
+        updateScores();
+        updateHistory(playerRoll, computerRoll, winner);
+
+        if (!checkGameOver()) {
+          resultTextEl.textContent = `Rodada ${currentRound} completa. Próxima jogada!`;
+        }
+      }, 400);
+    }
+
+    // Reseta o jogo
+    function resetGame() {
+      playerScore = 0;
+      computerScore = 0;
+      currentRound = 0;
+      gameOver = false;
+      maxRounds = parseInt(roundsSelectEl.value);
+      updateScores();
+      resultTextEl.textContent = 'Clique em "Jogar" para começar!';
+      playerDiceEl.textContent = '🎲';
+      computerDiceEl.textContent = '🎲';
+      historyEl.innerHTML = '';
+      rollBtn.disabled = false;
+    }
+
+    // Alterna o modo escuro
+    function toggleDarkMode() {
+      bodyEl.classList.toggle('dark');
+      const isDark = bodyEl.classList.contains('dark');
+      darkModeBtn.textContent = isDark ? '☀️ Modo Claro' : '🌙 Modo Escuro';
+      darkModeBtn.setAttribute('aria-pressed', isDark);
+    }
+
+    // Eventos
+    rollBtn.addEventListener('click', playRound);
+    resetBtn.addEventListener('click', resetGame);
+    darkModeBtn.addEventListener('click', toggleDarkMode);
+    roundsSelectEl.addEventListener('change', () => {
+      maxRounds = parseInt(roundsSelectEl.value);
+      resetGame();
+    });
+
+    // Inicia jogo limpo
+    resetGame();
+  </script>
+
+</body>
+</html>
